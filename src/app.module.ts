@@ -4,8 +4,8 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { HealthModule } from './modules/health/health.module';
 import { DatabaseModule } from './infra/database/database.module';
-import { HealthModule } from './health/health.module';
 import databaseConfig from './infra/database/database.config';
+import { DynamoDBService } from './infra/database/dynamodb.service';
 
 @Module({
   imports: [
@@ -19,6 +19,6 @@ import databaseConfig from './infra/database/database.config';
     HealthModule,
   ],
   controllers: [],
-  providers: [DynamoDBService],
+  providers: [],
 })
 export class AppModule {}
