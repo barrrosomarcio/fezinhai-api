@@ -4,21 +4,22 @@ import { UserEntity } from './domain/user.entity';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { DatabaseTables } from 'src/infra/database/domain/database.types';
+import { DatabaseService } from 'src/infra/database/database.service';
 
 @Injectable()
 export class UserRepository {
   private readonly tableName = DatabaseTables.USERS;
 
   constructor(
-    private readonly dynamoDBService: DynamoDBService,
+    private readonly databaseService: DatabaseService,
   ) {}
 
   findById(id: string): Observable<UserEntity | null> {
-    return this.dynamoDBService.get(this.tableName, { id }) as Observable<UserEntity | null>;
+    return this.databaseService.get(this.tableName, { id }) as Observable<UserEntity | null>;
   }
 
   findByEmail(email: string): Observable<UserEntity[]> {
-    return this.dynamoDBService.query(
+    return this.databaseService.query(
       this.tableName,
       'email = :email',
       { ':email': email }
@@ -26,13 +27,13 @@ export class UserRepository {
   }
 
   save(user: UserEntity): Observable<UserEntity> {
-    return this.dynamoDBService.put(this.tableName, user).pipe(
+    return this.databaseService.put(this.tableName, user).pipe(
       map(() => user)
     );
   }
 
-  update(user: UserEntity): Observable<UserEntity | null> {
-    return this.dynamoDBService.update(
+  update(user: UserEntity): Observable<UserEntity> {
+    return this.databaseService.update(
       this.tableName,
       { id: user.id },
       'SET #name = :name, #email = :email, #password = :password, #isActive = :isActive, #preferences = :preferences, #updatedAt = :updatedAt',
@@ -44,19 +45,11 @@ export class UserRepository {
         ':preferences': user.preferences,
         ':updatedAt': user.updatedAt,
       },
-      {
-        '#name': 'name',
-        '#email': 'email',
-        '#password': 'password',
-        '#isActive': 'isActive',
-        '#preferences': 'preferences',
-        '#updatedAt': 'updatedAt',
-      }
-    ) as Observable<UserEntity | null>;
+    ) as Observable<UserEntity>;
   }
 
   delete(id: string): Observable<{ success: boolean }> {
-    return this.dynamoDBService.delete(this.tableName, { id }).pipe(
+    return this.databaseService.delete(this.tableName, { id }).pipe(
       map(() => ({ success: true }))
     );
   }
