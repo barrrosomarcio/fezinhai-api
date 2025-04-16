@@ -27,7 +27,7 @@ export class UserService {
         email: createUserDto.email,
         name: createUserDto.name,
         password: createUserDto.password,
-        preferences: createUserDto.preferences,
+        preferences: createUserDto.preferences ?? { theme: 'light', notifications: true },
         isActive: true,
         createdAt: new Date(),
         updatedAt: new Date(),
