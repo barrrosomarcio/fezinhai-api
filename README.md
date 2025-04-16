@@ -1,78 +1,130 @@
 # FezinhAI API
 
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+API para o projeto FezinhAI, uma aplicação de receitas inteligente.
 
-## Description
+## Tecnologias
 
-FezinhAI API is a NestJS-based backend service that provides user management and authentication functionality. The API is built with TypeScript and uses DynamoDB as its database.
+- NestJS
+- TypeScript
+- AWS DynamoDB
+- JWT Authentication
+- RxJS
+- Swagger
 
-## Features
-
-- User authentication (JWT-based)
-- User management (CRUD operations)
-- User preferences management
-- Reactive programming with RxJS
-- Swagger API documentation
-- Error handling with custom error classes
-- Type-safe DTOs and entities
-
-## Project Structure
+## Estrutura do Projeto
 
 ```
 src/
+├── infra/
+│   ├── aws-dynamo-db/          # Módulo específico para AWS DynamoDB
+│   │   ├── aws-dynamo-db.module.ts
+│   │   └── aws-dynamo-db.service.ts
+│   └── database/               # Módulo genérico de banco de dados
+│       ├── database.module.ts
+│       ├── database.service.ts
+│       └── interfaces/
+│           └── database.service.interface.ts
 ├── modules/
-│   ├── auth/           # Authentication module
-│   └── users/          # User management module
-├── shared/
-│   ├── errors/         # Custom error classes
-│   └── guards/         # Authentication guards
-└── infra/
-    └── database/       # Database service
+│   ├── auth/                   # Módulo de autenticação
+│   │   ├── auth.controller.ts
+│   │   ├── auth.module.ts
+│   │   ├── auth.service.ts
+│   │   └── dto/
+│   │       ├── auth.dto.ts
+│   │       └── auth-response.dto.ts
+│   ├── health/                 # Módulo de health metrics
+│   │   ├── health.controller.ts
+│   │   ├── health.module.ts
+│   │   ├── health.service.ts
+│   │   └── dto/
+│   │       └── health-metrics.dto.ts
+│   └── users/                  # Módulo de usuários
+│       ├── domain/
+│       │   └── user.entity.ts
+│       ├── dto/
+│       │   ├── create-user.dto.ts
+│       │   ├── update-user.dto.ts
+│       │   └── update-user-preferences.dto.ts
+│       ├── user.repository.ts
+│       ├── user.service.ts
+│       └── users.module.ts
+└── shared/
+    └── errors/                 # Tratamento de erros
+        ├── http-errors.filter.ts
+        └── database-erros.filter.ts
 ```
 
-## Project Setup
+## Configuração do Ambiente
+
+1. Clone o repositório
+2. Instale as dependências:
+```bash
+npm install
+```
+
+3. Configure as variáveis de ambiente:
+```bash
+cp .env.example .env
+```
+
+4. Preencha as variáveis no arquivo `.env`:
+```
+# AWS Configuration
+AWS_REGION=your-region
+AWS_ACCESS_KEY_ID=your-access-key
+AWS_SECRET_ACCESS_KEY=your-secret-key
+DYNAMODB_TABLE_NAME=your-table-name
+
+# JWT Configuration
+JWT_SECRET=your-jwt-secret
+JWT_EXPIRES_IN=1d
+
+# Application
+PORT=3000
+NODE_ENV=development
+```
+
+## Executando o Projeto
 
 ```bash
-# Install dependencies
-$ npm install
+# Desenvolvimento
+npm run start:dev
 
-# Development
-$ npm run start:dev
-
-# Production
-$ npm run start:prod
+# Produção
+npm run build
+npm run start:prod
 ```
 
-## Environment Variables
+## Documentação da API
 
-Create a `.env` file with the following variables:
+A documentação da API está disponível em `/api` quando o servidor estiver rodando.
 
-```env
-JWT_SECRET=your_jwt_secret
-AWS_REGION=your_aws_region
-AWS_ACCESS_KEY_ID=your_aws_access_key
-AWS_SECRET_ACCESS_KEY=your_aws_secret_key
-```
+## Características
 
-## Testing
+- Arquitetura limpa e modular
+- Autenticação JWT
+- Tratamento de erros centralizado
+- Health check da aplicação
+- Integração com AWS DynamoDB
+- Programação reativa com RxJS
+- Documentação Swagger
+- Validação de DTOs
+- Tipagem forte com TypeScript
 
-```bash
-# Unit tests
-$ npm run test
+## Padrões de Código
 
-# e2e tests
-$ npm run test:e2e
+- SOLID principles
+- Clean Architecture
+- Repository Pattern
+- Dependency Injection
+- Reactive Programming
+- Error Handling
+- Type Safety
 
-# Test coverage
-$ npm run test:cov
-```
+## Contribuição
 
-## API Documentation
-
-The API documentation is available through Swagger UI at `/api` when the application is running. It provides detailed information about all available endpoints, request/response schemas, and authentication requirements.
-
-## License
-
-This project is licensed under the MIT License.
+1. Faça um fork do projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
