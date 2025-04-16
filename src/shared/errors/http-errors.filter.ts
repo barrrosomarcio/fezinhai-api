@@ -40,4 +40,12 @@ export class HttpErrors {
             code: 'CONFLICT'
         }, HttpStatus.CONFLICT);
     }
+
+    static internalServerError(message: string): HttpException {
+        return new HttpException({
+            status: HttpStatus.INTERNAL_SERVER_ERROR,
+            error: message, 
+            code: 'INTERNAL_SERVER_ERROR'
+        }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 } 

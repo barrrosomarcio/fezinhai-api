@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, HttpException } from '@nestjs/common';
 import { Observable, throwError } from 'rxjs';
 import { UserRepository } from './user.repository';
 import { UserEntity } from './domain/user.entity';
@@ -16,7 +16,6 @@ export class UserService {
   constructor(private readonly userRepository: UserRepository) {}
 
   private handleError(error: any): Observable<never> {
-    
     if (error.name && DynamoDBErrors.ErrorCodes[error.name]) {
       this.logger.error('DynamoDB Error occurred:', {
         error: error.message,
@@ -24,6 +23,11 @@ export class UserService {
       });
       return throwError(() => DynamoDBErrors.handleError(error));
     }
+
+    if (error instanceof HttpException) {
+      return throwError(() => error);
+    }
+
     this.logger.error('Error occurred:', {
       error: error.message,
       name: error.name

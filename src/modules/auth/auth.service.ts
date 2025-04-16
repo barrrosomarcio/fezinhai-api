@@ -8,13 +8,15 @@ import { UserEntity } from '../users/domain/user.entity';
 import { HttpErrors } from '../../shared/errors/http-errors.filter';
 import { DynamoDBErrors } from '../../shared/errors/database-erros.filter';
 import { CreateUserDto } from '../users/dto/create-user.dto';
-import { v4 as uuidv4 } from 'uuid';
+import { UserRepository } from '../users/user.repository';
+
 @Injectable()
 export class AuthService {
   private logger = new Logger(AuthService.name);
 
   constructor(
     private readonly userService: UserService,
+    private readonly userRepository: UserRepository,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -24,26 +26,33 @@ export class AuthService {
       name: error.name
     });
 
+    if (error instanceof HttpException) {
+      return throwError(() => error);
+    }
+
     if (error.name && DynamoDBErrors.ErrorCodes[error.name]) {
       return throwError(() => DynamoDBErrors.handleError(error));
     }
+
     return throwError(() => HttpErrors.badRequest(error.message || 'An unexpected error occurred'));
   }
 
-  private generateToken(user: UserEntity): Observable<any> {
-    return from(this.jwtService.sign({
-        sub: user.id,
-        email: user.email,
-        name: user.name
-    })).pipe(
-        map(token => ({ token, user })),
-        catchError(error => {
-          this.logger.error('Error generating token:', {
-            userId: user.id,
-            error: error.message
-          });
-          return throwError(() => error);
-        })
+  private generateToken(user: UserEntity): Observable<{ token: string; user: UserEntity }> {
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      name: user.name
+    };
+
+    return from(this.jwtService.signAsync(payload)).pipe(
+      map(token => ({ token, user })),
+      catchError(error => {
+        this.logger.error('Error generating token:', {
+          userId: user.id,
+          error: error.message
+        });
+        return throwError(() => error);
+      })
     );
   }
 
@@ -61,7 +70,13 @@ export class AuthService {
   }
 
   register(registerDto: RegisterDto): Observable<AuthResponseDto> {
-    return this.userService.create(registerDto as CreateUserDto).pipe(
+    return this.userRepository.findByEmail(registerDto.email).pipe(
+      mergeMap(user => {
+        if (!!user) {
+          return throwError(() => HttpErrors.conflict('Email already exists'));
+        }
+        return this.userService.create(registerDto as CreateUserDto);
+      }),
       mergeMap(user => this.generateToken(user)),
       map(({ user, token }) => this.mapToAuthResponse(user, token)),
       catchError(error => this.handleError(error))

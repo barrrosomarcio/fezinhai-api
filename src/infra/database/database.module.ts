@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { DynamoDBService } from './dynamodb.service';
+import { AwsDynamoDBModule } from '../aws-dynamo-db/aws-dynamo-db.module';
+import { DatabaseService } from './database.service';
 
 @Module({
-  imports: [ConfigModule],
-  providers: [DynamoDBService],
-  exports: [DynamoDBService],
+  imports: [AwsDynamoDBModule],
+  providers: [DatabaseService],
+  exports: [DatabaseService],
 })
 export class DatabaseModule {} 
