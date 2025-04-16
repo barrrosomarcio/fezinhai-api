@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Observable, throwError } from 'rxjs';
 import { UserRepository } from './user.repository';
 import { UserEntity } from './domain/user.entity';
@@ -12,25 +12,31 @@ import { DynamoDBErrors } from '../../shared/errors/database-erros.filter';
 
 @Injectable()
 export class UserService {
+  private readonly logger = new Logger(UserService.name);
   constructor(private readonly userRepository: UserRepository) {}
 
   private handleError(error: any): Observable<never> {
+    
     if (error.name && DynamoDBErrors.ErrorCodes[error.name]) {
+      this.logger.error('DynamoDB Error occurred:', {
+        error: error.message,
+        name: error.name
+      });
       return throwError(() => DynamoDBErrors.handleError(error));
     }
+    this.logger.error('Error occurred:', {
+      error: error.message,
+      name: error.name
+    });
     return throwError(() => HttpErrors.badRequest(error.message || 'An unexpected error occurred'));
   }
 
   create(createUserDto: CreateUserDto): Observable<UserEntity> {
-    const user = new UserEntity({
-        id: uuidv4(),
-        email: createUserDto.email,
-        name: createUserDto.name,
-        password: createUserDto.password,
-        preferences: createUserDto.preferences,
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+    const user = UserEntity.create({
+      email: createUserDto.email,
+      name: createUserDto.name,
+      password: createUserDto.password,
+      preferences: createUserDto.preferences ?? { theme: 'light', notifications: true },
     });
     return this.userRepository.save(user).pipe(
       catchError(error => this.handleError(error))
@@ -65,13 +71,13 @@ export class UserService {
       }),
       switchMap(user => {
         if (updateUserDto.email) {
-          user.updateEmail(updateUserDto.email);
+          user.email = updateUserDto.email;
         }
         if (updateUserDto.name) {
-          user.updateName(updateUserDto.name);
+          user.name = updateUserDto.name;
         }
         if (updateUserDto.password) {
-          user.updatePassword(updateUserDto.password);
+          user.password = updateUserDto.password;
         }
         return this.userRepository.update(user).pipe(
           map(updatedUser => {
@@ -96,7 +102,7 @@ export class UserService {
           theme: preferencesDto.theme ?? currentPreferences.theme,
           notifications: preferencesDto.notifications ?? currentPreferences.notifications,
         };
-        user.updatePreferences(updatedPreferences);
+        user.preferences = updatedPreferences;
         return this.userRepository.update(user).pipe(
           map(updatedUser => {
             if (!updatedUser) throw HttpErrors.notFound(`Failed to update user preferences with ID ${id}`);
@@ -126,7 +132,7 @@ export class UserService {
         return user;
       }),
       switchMap(user => {
-        user.deactivate();
+        user.isActive = false;
         return this.userRepository.update(user).pipe(
           map(updatedUser => {
             if (!updatedUser) throw HttpErrors.notFound(`Failed to deactivate user with ID ${id}`);
@@ -145,7 +151,7 @@ export class UserService {
         return user;
       }),
       switchMap(user => {
-        user.activate();
+        user.isActive = true;
         return this.userRepository.update(user).pipe(
           map(updatedUser => {
             if (!updatedUser) throw HttpErrors.notFound(`Failed to activate user with ID ${id}`);
