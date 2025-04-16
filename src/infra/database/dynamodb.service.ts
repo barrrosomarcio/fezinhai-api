@@ -1,81 +1,93 @@
-import { Injectable, HttpException } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, GetCommand, PutCommand, DeleteCommand, QueryCommand, ScanCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
-import { databaseConfig } from './database.config';
 import { Observable, defer, of, throwError } from 'rxjs';
 import { map, mergeMap, catchError } from 'rxjs/operators';
-import { BaseDynamoDBMapper } from './mappers/base-dynamodb.mapper';
+import { DynamoDBString } from './types/dynamodb-attribute.types';
 import { BaseEntity } from './interfaces/base-entity.interface';
-import { DynamoDBErrors } from '../../shared/errors/database-erros.filter';
 
 @Injectable()
-export class DynamoDBService {
-  private readonly client: DynamoDBClient;
-  private readonly docClient: DynamoDBDocumentClient;
+export class DynamoDBService implements OnModuleInit {
+  private client: DynamoDBClient;
+  private docClient: DynamoDBDocumentClient;
+  private readonly logger = new Logger(DynamoDBService.name);
 
-  constructor() {
-    this.client = new DynamoDBClient(databaseConfig);
-    this.docClient = DynamoDBDocumentClient.from(this.client);
+  constructor(private readonly configService: ConfigService) {}
+
+  onModuleInit() {
+    this.startConnection();
   }
 
-  private handleError(error: any): Observable<never> {
-    if (error instanceof HttpException) {
-      return throwError(() => error);
+  private startConnection(): void {
+    try {
+      const databaseConfig = this.configService.get('database');      
+      if (!databaseConfig.credentials.accessKeyId || !databaseConfig.credentials.secretAccessKey) {
+        throw new Error('AWS credentials are not configured');
+      }
+
+      this.client = new DynamoDBClient(databaseConfig);
+      this.docClient = DynamoDBDocumentClient.from(this.client);
+      this.logger.log('DynamoDBService initialized');
+    } catch (error) {
+      this.logger.error('Error connecting to DynamoDB:', error);
+      throw error;
     }
-    const httpException = DynamoDBErrors.handleError(error);
-    return throwError(() => httpException);
   }
 
-  get<T extends BaseEntity>(tableName: string, key: Record<string, any>, mapper: BaseDynamoDBMapper<T>): Observable<T | null> {
+  private formatKey(key: Record<string, any>): Record<string, DynamoDBString> {
+    return Object.entries(key).reduce((acc, [k, v]) => {
+      acc[k] = { S: String(v) };
+      return acc;
+    }, {} as Record<string, DynamoDBString>);
+  }
+
+  get(tableName: string, key: Record<string, any>): Observable<Record<string, any> | null> {
     return defer(() => 
       of(new GetCommand({
         TableName: tableName,
-        Key: key,
+        Key: this.formatKey(key),
       })).pipe(
         mergeMap(getCommand => this.docClient.send(getCommand)),
-        map(response => {
-          if (!response.Item) return null;
-          return mapper.toEntity(response.Item);
-        }),
-        catchError(error => this.handleError(error))
+        map(response => response.Item || null),
+        catchError(error => throwError(() => error))
       )
     );
   }
 
-  put<T extends BaseEntity>(tableName: string, entity: T, mapper: BaseDynamoDBMapper<T>): Observable<T> {
+  put<T extends BaseEntity>(tableName: string, item: T): Observable<void> {
     return defer(() => 
       of(new PutCommand({
         TableName: tableName,
-        Item: mapper.toDynamoDB(entity),
+        Item: item,
       })).pipe(
         mergeMap(putCommand => this.docClient.send(putCommand)),
-        map(() => entity),
-        catchError(error => this.handleError(error))
+        map(() => undefined),
+        catchError(error => throwError(() => error))
       )
     );
   }
 
-  delete(tableName: string, key: Record<string, any>): Observable<{ success: boolean }> {
+  delete(tableName: string, key: Record<string, any>): Observable<void> {
     return defer(() => 
       of(new DeleteCommand({
         TableName: tableName,
-        Key: key,
+        Key: this.formatKey(key),
       })).pipe(
         mergeMap(deleteCommand => this.docClient.send(deleteCommand)),
-        map(() => ({ success: true })),
-        catchError(error => this.handleError(error))
+        map(() => undefined),
+        catchError(error => throwError(() => error))
       )
     );
   }
 
-  query<T extends BaseEntity>(
+  query(
     tableName: string,
     keyConditionExpression: string,
     expressionAttributeValues: Record<string, any>,
-    mapper: BaseDynamoDBMapper<T>,
     filterExpression?: string,
     limit?: number,
-  ): Observable<T[]> {
+  ): Observable<Record<string, any>[]> {
     return defer(() => 
       of(new QueryCommand({
         TableName: tableName,
@@ -85,19 +97,18 @@ export class DynamoDBService {
         Limit: limit,
       })).pipe(
         mergeMap(queryCommand => this.docClient.send(queryCommand)),
-        map(response => (response.Items || []).map(item => mapper.toEntity(item))),
-        catchError(error => this.handleError(error))
+        map(response => response.Items || []),
+        catchError(error => throwError(() => error))
       )
     );
   }
 
-  scan<T extends BaseEntity>(
+  scan(
     tableName: string,
-    mapper: BaseDynamoDBMapper<T>,
     filterExpression?: string,
     expressionAttributeValues?: Record<string, any>,
     limit?: number,
-  ): Observable<T[]> {
+  ): Observable<Record<string, any>[]> {
     return defer(() => 
       of(new ScanCommand({
         TableName: tableName,
@@ -106,35 +117,31 @@ export class DynamoDBService {
         Limit: limit,
       })).pipe(
         mergeMap(scanCommand => this.docClient.send(scanCommand)),
-        map(response => (response.Items || []).map(item => mapper.toEntity(item))),
-        catchError(error => this.handleError(error))
+        map(response => response.Items || []),
+        catchError(error => throwError(() => error))
       )
     );
   }
 
-  update<T extends BaseEntity>(
+  update(
     tableName: string,
     key: Record<string, any>,
     updateExpression: string,
     expressionAttributeValues: Record<string, any>,
-    mapper: BaseDynamoDBMapper<T>,
     expressionAttributeNames?: Record<string, string>
-  ): Observable<T | null> {
+  ): Observable<Record<string, any> | null> {
     return defer(() => 
       of(new UpdateCommand({
         TableName: tableName,
-        Key: key,
+        Key: this.formatKey(key),
         UpdateExpression: updateExpression,
         ExpressionAttributeValues: expressionAttributeValues,
         ExpressionAttributeNames: expressionAttributeNames,
         ReturnValues: 'ALL_NEW',
       })).pipe(
         mergeMap(updateCommand => this.docClient.send(updateCommand)),
-        map(response => {
-          if (!response.Attributes) return null;
-          return mapper.toEntity(response.Attributes);
-        }),
-        catchError(error => this.handleError(error))
+        map(response => response.Attributes || null),
+        catchError(error => throwError(() => error))
       )
     );
   }

@@ -1,34 +1,34 @@
 import { Injectable } from '@nestjs/common';
 import { DynamoDBService } from '../../infra/database/dynamodb.service';
 import { UserEntity } from './domain/user.entity';
-import { UserMapper } from './mappers/user.mapper';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { DatabaseTables } from 'src/infra/database/domain/database.types';
 
 @Injectable()
 export class UserRepository {
-  private readonly tableName = 'Users';
+  private readonly tableName = DatabaseTables.USERS;
 
   constructor(
     private readonly dynamoDBService: DynamoDBService,
-    private readonly userMapper: UserMapper,
   ) {}
 
   findById(id: string): Observable<UserEntity | null> {
-    return this.dynamoDBService.get(this.tableName, { id }, this.userMapper);
+    return this.dynamoDBService.get(this.tableName, { id }) as Observable<UserEntity | null>;
   }
 
   findByEmail(email: string): Observable<UserEntity[]> {
     return this.dynamoDBService.query(
       this.tableName,
       'email = :email',
-      { ':email': email },
-      this.userMapper,
-    );
+      { ':email': email }
+    ) as Observable<UserEntity[]>;
   }
 
   save(user: UserEntity): Observable<UserEntity> {
-    return this.dynamoDBService.put(this.tableName, user, this.userMapper);
+    return this.dynamoDBService.put(this.tableName, user).pipe(
+      map(() => user)
+    );
   }
 
   update(user: UserEntity): Observable<UserEntity | null> {
@@ -42,9 +42,8 @@ export class UserRepository {
         ':password': user.password,
         ':isActive': user.isActive,
         ':preferences': user.preferences,
-        ':updatedAt': user.updatedAt.toISOString(),
+        ':updatedAt': user.updatedAt,
       },
-      this.userMapper,
       {
         '#name': 'name',
         '#email': 'email',
@@ -53,10 +52,12 @@ export class UserRepository {
         '#preferences': 'preferences',
         '#updatedAt': 'updatedAt',
       }
-    );
+    ) as Observable<UserEntity | null>;
   }
 
   delete(id: string): Observable<{ success: boolean }> {
-    return this.dynamoDBService.delete(this.tableName, { id });
+    return this.dynamoDBService.delete(this.tableName, { id }).pipe(
+      map(() => ({ success: true }))
+    );
   }
 } 
