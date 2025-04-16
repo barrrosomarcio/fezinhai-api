@@ -1,46 +1,29 @@
 import { BaseEntity } from '../../../infra/database/interfaces/base-entity.interface';
-import { ApiProperty } from '@nestjs/swagger';
-
+import { v4 as uuidv4 } from 'uuid';
+import { CreateUserDto } from '../dto/create-user.dto';
 export interface UserPreferences {
   theme: 'light' | 'dark';
   notifications: boolean;
 }
 
 export class UserEntity implements BaseEntity {
-  @ApiProperty({ example: '123e4567-e89b-12d3-a456-426614174000' })
   id: string;
 
-  @ApiProperty({ example: 'user@example.com' })
   email: string;
 
-  @ApiProperty({ example: 'John Doe' })
   name: string;
 
-  @ApiProperty({ example: 'hashed_password' })
   password: string;
 
-  @ApiProperty({ 
-    type: 'object',
-    example: { theme: 'light', notifications: true },
-    description: 'User preferences',
-    additionalProperties: false,
-    properties: {
-      theme: { type: 'string', enum: ['light', 'dark'] },
-      notifications: { type: 'boolean' }
-    }
-  })
   preferences: UserPreferences;
 
-  @ApiProperty({ example: true })
   isActive: boolean;
 
-  @ApiProperty({ example: '2024-01-01T00:00:00.000Z' })
-  createdAt: Date;
+  createdAt: string;
 
-  @ApiProperty({ example: '2024-01-01T00:00:00.000Z' })
-  updatedAt: Date;
+  updatedAt: string;
 
-  deletedAt?: Date;
+  deletedAt?: string;
 
   constructor({
     id,
@@ -59,9 +42,9 @@ export class UserEntity implements BaseEntity {
     password: string;
     preferences: UserPreferences;
     isActive: boolean;
-    createdAt: Date;
-    updatedAt: Date;
-    deletedAt?: Date;
+    createdAt: string;
+    updatedAt: string;
+    deletedAt?: string;
   }) {
     this.id = id;
     this.email = email;
@@ -74,58 +57,26 @@ export class UserEntity implements BaseEntity {
     this.deletedAt = deletedAt;
   }
 
-  static create(
-    email: string,
-    name: string,
-    password: string,
-    preferences: UserPreferences,
-  ): UserEntity {
-    const id = crypto.randomUUID();
+  static create({
+    email,
+    name,
+    password,
+    preferences,
+  }: {
+    email: string;
+    name: string;
+    password: string;
+    preferences: UserPreferences;
+  }): UserEntity {
     return new UserEntity({
-      id,
+      id: uuidv4(),
       email,
       name,
       password,
       preferences,
       isActive: true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     });
-  }
-
-  updateName(name: string): void {
-    this.name = name;
-    this.updatedAt = new Date();
-  }
-
-  updateEmail(email: string): void {
-    this.email = email;
-    this.updatedAt = new Date();
-  }
-
-  updatePassword(password: string): void {
-    this.password = password;
-    this.updatedAt = new Date();
-  }
-
-  updatePreferences(preferences: UserPreferences): void {
-    this.preferences = preferences;
-    this.updatedAt = new Date();
-  }
-
-  activate(): void {
-    this.isActive = true;
-    this.updatedAt = new Date();
-  }
-
-  deactivate(): void {
-    this.isActive = false;
-    this.deletedAt = new Date();
-  }
-
-  reactivate(): void {
-    this.isActive = true;
-    this.deletedAt = undefined;
-    this.updatedAt = new Date();
   }
 } 
