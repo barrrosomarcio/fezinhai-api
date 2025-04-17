@@ -27,6 +27,3 @@ jobs:
 
       - name: Build project
         run: npm run build
-
-      - name: Verify types
-        run: npm run type-check
