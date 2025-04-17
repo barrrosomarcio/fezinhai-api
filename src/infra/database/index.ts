@@ -1,3 +1,3 @@
 export * from './database.module';
 export * from './dynamodb.service';
-export * from './database.config'; 
+export * from './database.config';

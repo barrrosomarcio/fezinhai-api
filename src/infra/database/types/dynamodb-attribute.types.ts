@@ -21,4 +21,4 @@ export type DynamoDBValue =
   | DynamoDBList
   | DynamoDBMap;
 
-export type DynamoDBAttributeMap = Record<string, DynamoDBValue>; 
+export type DynamoDBAttributeMap = Record<string, DynamoDBValue>;

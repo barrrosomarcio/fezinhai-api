@@ -6,4 +6,4 @@ import { ConfigService } from '@nestjs/config';
   controllers: [HealthController],
   providers: [HealthService, ConfigService],
 })
-export class HealthModule {} 
+export class HealthModule {}

@@ -2,14 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { HealthMetricsDto } from './dto/health-metrics.dto';
 
 @Injectable()
 export class HealthService {
-  constructor(
-    private readonly configService: ConfigService,
-  ) {}
+  constructor(private readonly configService: ConfigService) {}
 
-  getMetrics(): Observable<any> {
+  getMetrics(): Observable<HealthMetricsDto> {
     return of({}).pipe(
       map(() => {
         const memoryUsage = process.memoryUsage();
@@ -17,7 +16,10 @@ export class HealthService {
         const uptime = process.uptime();
         const activeConnections = process.listenerCount('connection');
         const version = this.configService.get<string>('APP_VERSION', '1.0.0');
-        const environment = this.configService.get<string>('NODE_ENV', 'development');
+        const environment = this.configService.get<string>(
+          'NODE_ENV',
+          'development',
+        );
 
         return {
           memory: {
@@ -26,7 +28,7 @@ export class HealthService {
             external: memoryUsage.external,
             rss: memoryUsage.rss,
           },
-          cpu: {
+          cpuUsage: {
             user: cpuUsage.user,
             system: cpuUsage.system,
           },
@@ -36,7 +38,7 @@ export class HealthService {
           environment,
           timestamp: new Date(),
         };
-      })
+      }),
     );
   }
-} 
+}

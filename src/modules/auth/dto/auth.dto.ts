@@ -47,4 +47,4 @@ export class AuthResponseDto {
       notifications: boolean;
     };
   };
-} 
+}
