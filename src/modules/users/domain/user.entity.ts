@@ -1,6 +1,5 @@
 import { BaseEntity } from '../../../infra/database/interfaces/base-entity.interface';
 import { v4 as uuidv4 } from 'uuid';
-import { CreateUserDto } from '../dto/create-user.dto';
 export interface UserPreferences {
   theme: 'light' | 'dark';
   notifications: boolean;
@@ -79,4 +78,4 @@ export class UserEntity implements BaseEntity {
       updatedAt: new Date().toISOString(),
     });
   }
-} 
+}

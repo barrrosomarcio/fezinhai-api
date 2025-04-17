@@ -1,11 +1,30 @@
 import { BaseEntity } from '../interfaces/base-entity.interface';
-import { DynamoDBAttributeMap, DynamoDBValue } from '../types/dynamodb-attribute.types';
+import {
+  DynamoDBAttributeMap,
+  DynamoDBValue,
+} from '../types/dynamodb-attribute.types';
+
+// Tipo que representa todos os possíveis valores que podem ser mapeados para DynamoDB
+export type DynamoDBValueInput =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | Date
+  | Buffer
+  | string[]
+  | number[]
+  | Buffer[]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  | Record<string, any>
+  | DynamoDBValueInput[];
 
 export abstract class BaseDynamoDBMapper<T extends BaseEntity> {
   abstract toEntity(item: DynamoDBAttributeMap): T;
   abstract toDynamoDB(entity: T): DynamoDBAttributeMap;
 
-  protected mapToDynamoDBValue(value: any): DynamoDBValue {
+  protected mapToDynamoDBValue(value: DynamoDBValueInput): DynamoDBValue {
     if (value === null || value === undefined) {
       return { NULL: true };
     }
@@ -31,16 +50,16 @@ export abstract class BaseDynamoDBMapper<T extends BaseEntity> {
     }
 
     if (Array.isArray(value)) {
-      if (value.every(item => typeof item === 'string')) {
+      if (value.every((item) => typeof item === 'string')) {
         return { SS: value as string[] };
       }
-      if (value.every(item => typeof item === 'number')) {
-        return { NS: value.map(n => n.toString()) };
+      if (value.every((item) => typeof item === 'number')) {
+        return { NS: (value as number[]).map((n) => n.toString()) };
       }
-      if (value.every(item => Buffer.isBuffer(item))) {
+      if (value.every((item) => Buffer.isBuffer(item))) {
         return { BS: value as Buffer[] };
       }
-      return { L: value.map(item => this.mapToDynamoDBValue(item)) };
+      return { L: value.map((item) => this.mapToDynamoDBValue(item)) };
     }
 
     if (typeof value === 'object') {
@@ -54,7 +73,7 @@ export abstract class BaseDynamoDBMapper<T extends BaseEntity> {
     throw new Error(`Unsupported type for DynamoDB mapping: ${typeof value}`);
   }
 
-  protected mapFromDynamoDBValue(value: DynamoDBValue): any {
+  protected mapFromDynamoDBValue(value: DynamoDBValue): DynamoDBValueInput {
     if ('NULL' in value) {
       return null;
     }
@@ -80,7 +99,7 @@ export abstract class BaseDynamoDBMapper<T extends BaseEntity> {
     }
 
     if ('NS' in value) {
-      return value.NS.map(n => Number(n));
+      return value.NS.map((n) => Number(n));
     }
 
     if ('BS' in value) {
@@ -88,17 +107,19 @@ export abstract class BaseDynamoDBMapper<T extends BaseEntity> {
     }
 
     if ('L' in value) {
-      return value.L.map(item => this.mapFromDynamoDBValue(item));
+      return value.L.map((item) => this.mapFromDynamoDBValue(item));
     }
 
     if ('M' in value) {
-      const mappedObject: Record<string, any> = {};
+      const mappedObject: Record<string, DynamoDBValueInput> = {};
       for (const [key, val] of Object.entries(value.M)) {
         mappedObject[key] = this.mapFromDynamoDBValue(val);
       }
       return mappedObject;
     }
 
-    throw new Error(`Unsupported DynamoDB value type: ${JSON.stringify(value)}`);
+    throw new Error(
+      `Unsupported DynamoDB value type: ${JSON.stringify(value)}`,
+    );
   }
-} 
+}

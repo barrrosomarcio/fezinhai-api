@@ -11,7 +11,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     DatabaseModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
+      useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET'),
         signOptions: { expiresIn: '1d' },
       }),
@@ -22,4 +22,4 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
   providers: [UserService, UserRepository],
   exports: [UserService, UserRepository],
 })
-export class UsersModule {} 
+export class UsersModule {}

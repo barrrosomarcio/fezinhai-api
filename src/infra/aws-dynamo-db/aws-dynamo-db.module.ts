@@ -6,4 +6,4 @@ import { AwsDynamoDBService } from './aws-dynamo-db.service';
   providers: [AwsDynamoDBService],
   exports: [AwsDynamoDBService],
 })
-export class AwsDynamoDBModule {} 
+export class AwsDynamoDBModule {}

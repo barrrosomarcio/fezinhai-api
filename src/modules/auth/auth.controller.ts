@@ -13,18 +13,18 @@ export class AuthController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Register a new user' })
   @ApiBody({ type: RegisterDto })
-  @ApiResponse({ 
-    status: 201, 
+  @ApiResponse({
+    status: 201,
     description: 'The user has been successfully registered.',
-    type: AuthResponseDto
+    type: AuthResponseDto,
   })
-  @ApiResponse({ 
-    status: 400, 
-    description: 'Bad request. Invalid input data.' 
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request. Invalid input data.',
   })
-  @ApiResponse({ 
-    status: 409, 
-    description: 'Conflict. User with this email already exists.' 
+  @ApiResponse({
+    status: 409,
+    description: 'Conflict. User with this email already exists.',
   })
   register(@Body() registerDto: RegisterDto): Observable<AuthResponseDto> {
     return this.authService.register(registerDto);
@@ -34,20 +34,20 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Login user' })
   @ApiBody({ type: LoginDto })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'The user has been successfully logged in.',
-    type: AuthResponseDto
+    type: AuthResponseDto,
   })
-  @ApiResponse({ 
-    status: 401, 
-    description: 'Unauthorized. Invalid credentials.' 
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized. Invalid credentials.',
   })
-  @ApiResponse({ 
-    status: 400, 
-    description: 'Bad request. Invalid input data.' 
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request. Invalid input data.',
   })
   login(@Body() loginDto: LoginDto): Observable<AuthResponseDto> {
     return this.authService.login(loginDto);
   }
-} 
+}

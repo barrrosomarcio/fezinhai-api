@@ -6,8 +6,8 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 export class HealthController {
   @Get('metrics')
   @ApiOperation({ summary: 'Get health metrics' })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Returns health metrics of the application',
     schema: {
       example: {
@@ -17,10 +17,10 @@ export class HealthController {
         memory: {
           heapUsed: 1234567,
           heapTotal: 2345678,
-          external: 3456789
-        }
-      }
-    }
+          external: 3456789,
+        },
+      },
+    },
   })
   getMetrics() {
     return {
@@ -30,8 +30,8 @@ export class HealthController {
       memory: {
         heapUsed: process.memoryUsage().heapUsed,
         heapTotal: process.memoryUsage().heapTotal,
-        external: process.memoryUsage().external
-      }
+        external: process.memoryUsage().external,
+      },
     };
   }
-} 
+}
