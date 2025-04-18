@@ -5,6 +5,7 @@ import { UsersModule } from './modules/users/users.module';
 import { HealthModule } from './modules/health/health.module';
 import { DatabaseModule } from './infra/database/database.module';
 import databaseConfig from './infra/database/database.config';
+import { LotofacilModule } from './modules/lotofacil/lotofacil.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import databaseConfig from './infra/database/database.config';
     AuthModule,
     UsersModule,
     HealthModule,
+    LotofacilModule,
   ],
   controllers: [],
   providers: [],

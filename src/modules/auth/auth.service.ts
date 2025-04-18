@@ -80,7 +80,7 @@ export class AuthService {
     return this.userRepository.findByEmail(registerDto.email).pipe(
       mergeMap((user) => {
         if (user) {
-          return throwError(() => HttpErrors.conflict('Email already exists'));
+          return throwError(() => HttpErrors.conflict('Email', 'Email já está em uso'));
         }
         return this.userService.create(registerDto as CreateUserDto);
       }),
