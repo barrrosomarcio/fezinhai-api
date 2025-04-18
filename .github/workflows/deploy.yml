@@ -1,0 +1,62 @@
+name: Deploy to EC2
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+
+env:
+  AWS_REGION: us-east-1
+  EC2_INSTANCE: ${{ secrets.EC2_INSTANCE }}
+  SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build project
+        run: npm run build
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh/
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          cat >>~/.ssh/config <<END
+          Host ec2
+            HostName $EC2_INSTANCE
+            User ec2-user
+            IdentityFile ~/.ssh/deploy_key
+            StrictHostKeyChecking no
+          END
+
+      - name: Deploy to EC2
+        run: |
+          scp -r dist package.json package-lock.json .env ec2:/home/ec2-user/fezinhai-api/
+
+          ssh ec2 "cd /home/ec2-user/fezinhai-api && \
+            npm ci --production && \
+            pm2 restart fezinhai-api || pm2 start dist/main.js --name fezinhai-api"
