@@ -7,9 +7,11 @@ API para o projeto FezinhAI, uma aplicação de loterias inteligente.
 - NestJS
 - TypeScript
 - AWS DynamoDB
+- Redis (Cache)
 - JWT Authentication
 - RxJS
 - Swagger
+- Docker & Docker Compose
 
 ## Estrutura do Projeto
 
@@ -19,11 +21,19 @@ src/
 │   ├── aws-dynamo-db/          # Módulo específico para AWS DynamoDB
 │   │   ├── aws-dynamo-db.module.ts
 │   │   └── aws-dynamo-db.service.ts
-│   └── database/               # Módulo genérico de banco de dados
-│       ├── database.module.ts
-│       ├── database.service.ts
-│       └── interfaces/
-│           └── database.service.interface.ts
+│   ├── cache/                  # Módulo genérico de cache
+│   │   ├── cache.module.ts
+│   │   ├── cache.service.ts
+│   │   └── interfaces/
+│   │       └── cache.service.interface.ts
+│   ├── database/               # Módulo genérico de banco de dados
+│   │   ├── database.module.ts
+│   │   ├── database.service.ts
+│   │   └── interfaces/
+│   │       └── database.service.interface.ts
+│   └── redis/                  # Módulo específico para Redis
+│       ├── redis.module.ts
+│       └── redis.service.ts
 ├── modules/
 │   ├── auth/                   # Módulo de autenticação
 │   │   ├── auth.controller.ts
@@ -84,6 +94,11 @@ AWS_ACCESS_KEY_ID=your-access-key
 AWS_SECRET_ACCESS_KEY=your-secret-key
 DYNAMODB_TABLE_NAME=your-table-name
 
+# Redis Configuration
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=your-redis-password
+
 # JWT Configuration
 JWT_SECRET=your-jwt-secret
 JWT_EXPIRES_IN=1d
@@ -93,7 +108,46 @@ PORT=3000
 NODE_ENV=development
 ```
 
+## Configuração do DynamoDB
+
+Para o módulo Lotofacil, é necessário configurar uma tabela com a seguinte estrutura:
+
+- **Nome da Tabela**: fezinhai_lotofacil_concursos
+- **Chave de Partição (Hash Key)**: id (String)
+- **Chave de Classificação (Sort Key)**: concurso (Number)
+- **Índice Secundário Global (GSI)**:
+  - **Nome**: concurso-index
+  - **Chave de Partição**: concurso (Number)
+  - **Projeção**: All
+
+## Configuração do Redis
+
+O Redis é configurado automaticamente via Docker Compose. Para configuração manual, certifique-se de ter uma instância Redis disponível:
+
+1. Instalar localmente:
+```bash
+# Ubuntu
+sudo apt-get install redis-server
+
+# MacOS
+brew install redis
+```
+
+2. Ou usar um serviço gerenciado como Redis Cloud, Amazon ElastiCache, etc.
+
 ## Executando o Projeto
+
+### Com Docker (recomendado)
+
+```bash
+# Iniciar a aplicação com Docker Compose
+docker-compose up -d
+
+# Verificar logs
+docker-compose logs -f
+```
+
+### Sem Docker
 
 ```bash
 # Desenvolvimento
@@ -104,21 +158,51 @@ npm run build
 npm run start:prod
 ```
 
+## Deployment
+
+O deployment é automatizado via GitHub Actions para EC2:
+
+1. Configure os secrets do repositório:
+   - `EC2_INSTANCE`: Endereço IP ou DNS da instância EC2
+   - `SSH_PRIVATE_KEY`: Chave SSH privada para acessar a instância
+
+2. Execute o workflow "Deploy to EC2" manualmente na aba Actions do GitHub.
+
 ## Documentação da API
 
 A documentação da API está disponível em `/api` quando o servidor estiver rodando.
+
+## Endpoints Principais
+
+### Auth
+- `POST /auth/register` - Registrar novo usuário
+- `POST /auth/login` - Login de usuário
+
+### Health
+- `GET /health` - Verificar saúde da aplicação
+
+### Users
+- `GET /users/me` - Obter dados do usuário autenticado
+- `PATCH /users/me` - Atualizar dados do usuário autenticado
+
+### Lotofacil
+- `POST /lotofacil/save-results` - Salvar concursos da Lotofacil
+- `GET /lotofacil/latest` - Obter o concurso mais recente da Lotofacil
 
 ## Características
 
 - Arquitetura limpa e modular
 - Autenticação JWT
 - Tratamento de erros centralizado
+- Sistema de cache com Redis
 - Health check da aplicação
 - Integração com AWS DynamoDB
 - Programação reativa com RxJS
 - Documentação Swagger
 - Validação de DTOs
 - Tipagem forte com TypeScript
+- Containerização com Docker
+- Deploy automatizado via GitHub Actions
 
 ## Padrões de Código
 
