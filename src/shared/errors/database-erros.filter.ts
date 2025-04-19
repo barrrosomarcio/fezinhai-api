@@ -22,31 +22,33 @@ export class DynamoDBErrors {
   } as const;
 
   static handleError(error: DynamoDBError): HttpException {
+    const field = this.extractFieldFromError(error);
+
     switch (error.name) {
       case this.ErrorCodes.CONDITIONAL_CHECK_FAILED:
-        return HttpErrors.conflict(this.extractFieldFromError(error));
+        return HttpErrors.conflict(field, `${field} já existe`);
       case this.ErrorCodes.RESOURCE_NOT_FOUND:
-        return HttpErrors.notFound(this.extractFieldFromError(error));
+        return HttpErrors.notFound(field);
       case this.ErrorCodes.PROVISIONED_THROUGHPUT_EXCEEDED:
         return HttpErrors.badRequest(
-          'Request rate too high. Please try again later',
+          'Taxa de requisições muito alta. Tente novamente mais tarde',
         );
       case this.ErrorCodes.REQUEST_LIMIT_EXCEEDED:
         return HttpErrors.badRequest(
-          'Request limit exceeded. Please try again later',
+          'Limite de requisições excedido. Tente novamente mais tarde',
         );
       case this.ErrorCodes.ITEM_SIZE_TOO_LARGE:
         return HttpErrors.badRequest(
-          'Item size exceeds the maximum allowed size',
+          'Tamanho do item excede o máximo permitido',
         );
       case this.ErrorCodes.TABLE_NOT_FOUND:
-        return HttpErrors.notFound('The specified table was not found');
+        return HttpErrors.notFound('Tabela especificada não encontrada');
       case this.ErrorCodes.VALIDATION_EXCEPTION:
         return HttpErrors.badRequest(this.extractValidationMessage(error));
       case this.ErrorCodes.INTERNAL_SERVER_ERROR:
-        return HttpErrors.badRequest('Database error');
+        return HttpErrors.badRequest('Erro no banco de dados');
       default:
-        return HttpErrors.badRequest('Database error');
+        return HttpErrors.badRequest('Erro no banco de dados');
     }
   }
 
@@ -54,13 +56,13 @@ export class DynamoDBErrors {
     // Extrai o nome do campo do detalhe do erro
     const detail = error.detail || '';
     const match = detail.match(/\((.*?)\)/);
-    return match ? match[1] : 'field';
+    return match ? match[1] : 'Registro';
   }
 
   private static extractValidationMessage(error: DynamoDBError): string {
     if (error.message) {
       return error.message;
     }
-    return 'Invalid request parameters';
+    return 'Parâmetros da requisição inválidos';
   }
 }

@@ -105,11 +105,15 @@ export class AwsDynamoDBService implements OnModuleInit {
     tableName: string,
     keyConditionExpression: string,
     expressionAttributeValues: Record<string, DynamoDBValueInput>,
+    limit?: number,
+    scanIndexForward?: boolean,
   ): Observable<T[]> {
     const command = new QueryCommand({
       TableName: tableName,
       KeyConditionExpression: keyConditionExpression,
       ExpressionAttributeValues: expressionAttributeValues,
+      Limit: limit,
+      ScanIndexForward: scanIndexForward,
     });
 
     return from(this.docClient.send(command)).pipe(
