@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { HttpStatus, HttpException } from '@nestjs/common';
+import { HttpStatus } from '@nestjs/common';
 import { of, throwError } from 'rxjs';
 import { LotofacilController } from './lotofacil.controller';
 import { LotofacilService } from './lotofacil.service';
@@ -68,7 +68,8 @@ describe('LotofacilController', () => {
             code: 'VALIDATION_ERROR',
             details: {
               errors: validationErrors,
-              reason: 'Os dados fornecidos não atendem aos critérios de validação',
+              reason:
+                'Os dados fornecidos não atendem aos critérios de validação',
               action: 'Corrija os campos com erro e tente novamente',
             },
           });
@@ -96,7 +97,8 @@ describe('LotofacilController', () => {
             code: 'CONFLICT',
             details: {
               resource: 'Registro',
-              reason: 'Conflito ao tentar criar ou modificar um recurso existente',
+              reason:
+                'Conflito ao tentar criar ou modificar um recurso existente',
               action: 'Verifique se o recurso já existe antes de criar',
             },
           });
@@ -161,7 +163,9 @@ describe('LotofacilController', () => {
       const emptyDto: SaveResultsDto = { results: [] };
 
       mockLotofacilService.saveResults.mockReturnValue(
-        throwError(() => HttpErrors.badRequest('O array de resultados não pode estar vazio')),
+        throwError(() =>
+          HttpErrors.badRequest('O array de resultados não pode estar vazio'),
+        ),
       );
 
       controller.saveResults(emptyDto).subscribe({
@@ -182,7 +186,7 @@ describe('LotofacilController', () => {
     it('should handle internal server error', (done) => {
       const errorMessage = 'Erro ao processar os dados do concurso';
       const timestamp = new Date().toISOString();
-      
+
       jest.spyOn(Date.prototype, 'toISOString').mockReturnValue(timestamp);
 
       mockLotofacilService.saveResults.mockReturnValue(
@@ -199,7 +203,8 @@ describe('LotofacilController', () => {
               message: errorMessage,
               errorId: timestamp,
               timestamp,
-              action: 'Entre em contato com o suporte técnico informando o errorId',
+              action:
+                'Entre em contato com o suporte técnico informando o errorId',
             },
           });
           done();
@@ -224,7 +229,7 @@ describe('LotofacilController', () => {
 
     it('should handle not found error', (done) => {
       mockLotofacilService.getLatestResult.mockReturnValue(
-        throwError(() => HttpErrors.notFound('Nenhum resultado encontrado'))
+        throwError(() => HttpErrors.notFound('Nenhum resultado encontrado')),
       );
 
       controller.getLatestResult().subscribe({
@@ -246,11 +251,11 @@ describe('LotofacilController', () => {
     it('should handle internal server error', (done) => {
       const errorMessage = 'Erro ao buscar o resultado mais recente';
       const timestamp = new Date().toISOString();
-      
+
       jest.spyOn(Date.prototype, 'toISOString').mockReturnValue(timestamp);
 
       mockLotofacilService.getLatestResult.mockReturnValue(
-        throwError(() => HttpErrors.internalServerError(errorMessage))
+        throwError(() => HttpErrors.internalServerError(errorMessage)),
       );
 
       controller.getLatestResult().subscribe({
@@ -263,7 +268,8 @@ describe('LotofacilController', () => {
               message: errorMessage,
               errorId: timestamp,
               timestamp,
-              action: 'Entre em contato com o suporte técnico informando o errorId',
+              action:
+                'Entre em contato com o suporte técnico informando o errorId',
             },
           });
           done();
@@ -271,4 +277,4 @@ describe('LotofacilController', () => {
       });
     });
   });
-}); 
+});

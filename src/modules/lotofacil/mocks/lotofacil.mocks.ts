@@ -1,4 +1,8 @@
-import { SaveResultsDto, LotofacilPremiacaoDto, LotofacilResultDto } from '../dto/save-results.dto';
+import {
+  SaveResultsDto,
+  LotofacilPremiacaoDto,
+  LotofacilResultDto,
+} from '../dto/save-results.dto';
 import { LotofacilResultsEntity } from '../domain/lotofacil-results.entity';
 
 const mockPremiacao: LotofacilPremiacaoDto = {
@@ -12,7 +16,23 @@ const mockPremiacao: LotofacilPremiacaoDto = {
 const mockLotofacilResult: LotofacilResultDto = {
   concurso: 1,
   data: new Date('2024-01-01'),
-  dezenas: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15'],
+  dezenas: [
+    '01',
+    '02',
+    '03',
+    '04',
+    '05',
+    '06',
+    '07',
+    '08',
+    '09',
+    '10',
+    '11',
+    '12',
+    '13',
+    '14',
+    '15',
+  ],
   premiacoes: mockPremiacao,
   acumulou: false,
   acumuladaProxConcurso: 0,
@@ -26,15 +46,16 @@ export const mockResultDto: SaveResultsDto = {
   results: [mockLotofacilResult],
 };
 
-export const mockSavedEntity: LotofacilResultsEntity = LotofacilResultsEntity.create({
-  concurso: mockLotofacilResult.concurso,
-  data: mockLotofacilResult.data,
-  dezenas: mockLotofacilResult.dezenas,
-  premiacoes: mockLotofacilResult.premiacoes,
-  acumulou: mockLotofacilResult.acumulou,
-  acumuladaProxConcurso: mockLotofacilResult.acumuladaProxConcurso,
-  dataProxConcurso: mockLotofacilResult.dataProxConcurso,
-  proxConcurso: mockLotofacilResult.proxConcurso,
-  timeCoracao: mockLotofacilResult.timeCoracao,
-  mesSorte: mockLotofacilResult.mesSorte,
-}); 
+export const mockSavedEntity: LotofacilResultsEntity =
+  LotofacilResultsEntity.create({
+    concurso: mockLotofacilResult.concurso,
+    data: mockLotofacilResult.data,
+    dezenas: mockLotofacilResult.dezenas,
+    premiacoes: mockLotofacilResult.premiacoes,
+    acumulou: mockLotofacilResult.acumulou,
+    acumuladaProxConcurso: mockLotofacilResult.acumuladaProxConcurso,
+    dataProxConcurso: mockLotofacilResult.dataProxConcurso,
+    proxConcurso: mockLotofacilResult.proxConcurso,
+    timeCoracao: mockLotofacilResult.timeCoracao,
+    mesSorte: mockLotofacilResult.mesSorte,
+  });

@@ -10,4 +10,4 @@ import { DatabaseModule } from '../../infra/database/database.module';
   providers: [LotofacilService, LotofacilRepository],
   exports: [LotofacilService],
 })
-export class LotofacilModule {} 
+export class LotofacilModule {}

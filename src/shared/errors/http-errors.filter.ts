@@ -16,7 +16,10 @@ export class HttpErrors {
     );
   }
 
-  static badRequest(message: string, details?: Record<string, unknown>): HttpException {
+  static badRequest(
+    message: string,
+    details?: Record<string, unknown>,
+  ): HttpException {
     return new HttpException(
       {
         status: HttpStatus.BAD_REQUEST,

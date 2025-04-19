@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Observable, from, mergeMap, toArray } from 'rxjs';
+import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { DatabaseTables } from '../../infra/database/domain/database.types';
 import { DatabaseService } from '../../infra/database/database.service';
@@ -31,4 +31,4 @@ export class LotofacilRepository {
         }),
       );
   }
-} 
+}

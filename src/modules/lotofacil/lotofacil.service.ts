@@ -5,7 +5,10 @@ import { LotofacilRepository } from './lotofacil.repository';
 import { LotofacilResultsEntity } from './domain/lotofacil-results.entity';
 import { SaveResultsDto } from './dto/save-results.dto';
 import { HttpErrors } from '../../shared/errors/http-errors.filter';
-import { DynamoDBError, DynamoDBErrors } from '../../shared/errors/database-erros.filter';
+import {
+  DynamoDBError,
+  DynamoDBErrors,
+} from '../../shared/errors/database-erros.filter';
 
 @Injectable()
 export class LotofacilService {
@@ -67,4 +70,4 @@ export class LotofacilService {
       catchError((error) => this.handleError(error)),
     );
   }
-} 
+}

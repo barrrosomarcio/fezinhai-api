@@ -1,4 +1,11 @@
-import { Controller, Post, Get, Body, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Observable } from 'rxjs';
 import { LotofacilService } from './lotofacil.service';
@@ -22,7 +29,9 @@ export class LotofacilController {
     status: HttpStatus.BAD_REQUEST,
     description: 'Invalid input data',
   })
-  saveResults(@Body() dto: SaveResultsDto): Observable<LotofacilResultsEntity[]> {
+  saveResults(
+    @Body() dto: SaveResultsDto,
+  ): Observable<LotofacilResultsEntity[]> {
     return this.service.saveResults(dto);
   }
 
@@ -41,4 +50,4 @@ export class LotofacilController {
   getLatestResult(): Observable<LotofacilResultsEntity> {
     return this.service.getLatestResult();
   }
-} 
+}

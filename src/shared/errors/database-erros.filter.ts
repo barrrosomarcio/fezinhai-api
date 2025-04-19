@@ -23,7 +23,7 @@ export class DynamoDBErrors {
 
   static handleError(error: DynamoDBError): HttpException {
     const field = this.extractFieldFromError(error);
-    
+
     switch (error.name) {
       case this.ErrorCodes.CONDITIONAL_CHECK_FAILED:
         return HttpErrors.conflict(field, `${field} já existe`);

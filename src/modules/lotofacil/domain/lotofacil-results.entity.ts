@@ -69,7 +69,9 @@ export class LotofacilResultsEntity implements BaseEntity {
     this.updatedAt = props.updatedAt;
   }
 
-  static create(props: Omit<LotofacilResultsEntity, 'id' | 'createdAt' | 'updatedAt'>): LotofacilResultsEntity {
+  static create(
+    props: Omit<LotofacilResultsEntity, 'id' | 'createdAt' | 'updatedAt'>,
+  ): LotofacilResultsEntity {
     return new LotofacilResultsEntity({
       ...props,
       id: uuidv4(),
@@ -77,4 +79,4 @@ export class LotofacilResultsEntity implements BaseEntity {
       updatedAt: new Date().toISOString(),
     });
   }
-} 
+}

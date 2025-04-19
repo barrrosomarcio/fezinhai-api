@@ -1,5 +1,13 @@
 import { Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsDate, IsNotEmpty, IsNumber, IsString, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsDate,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 
 class PremiacaoDto {
   @IsNumber()
@@ -82,4 +90,4 @@ export class SaveResultsDto {
   @ValidateNested({ each: true })
   @Type(() => LotofacilResultDto)
   results: LotofacilResultDto[];
-} 
+}
