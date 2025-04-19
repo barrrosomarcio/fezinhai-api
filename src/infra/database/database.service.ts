@@ -29,11 +29,16 @@ export class DatabaseService implements IDatabaseService {
     tableName: string,
     keyConditionExpression: string,
     expressionAttributeValues: Record<string, DynamoDBValueInput>,
+    indexName?: string,
+    limit?: number,
+    scanIndexForward?: boolean,
   ): Observable<T[]> {
     return this.dynamoDBService.query<T>(
       tableName,
       keyConditionExpression,
       expressionAttributeValues,
+      limit,
+      scanIndexForward,
     );
   }
 

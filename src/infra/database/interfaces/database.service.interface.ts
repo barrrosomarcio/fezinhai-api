@@ -14,6 +14,9 @@ export interface IDatabaseService {
     tableName: string,
     keyConditionExpression: string,
     expressionAttributeValues: Record<string, DynamoDBValueInput>,
+    indexName?: string,
+    limit?: number,
+    scanIndexForward?: boolean,
   ): Observable<T[]>;
   scan<T>(tableName: string): Observable<T[]>;
   update<T>(

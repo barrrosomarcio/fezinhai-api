@@ -1,6 +1,6 @@
 import { Injectable, HttpException, Logger } from '@nestjs/common';
-import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { Observable, throwError, from, mergeMap, toArray } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { LotofacilRepository } from './lotofacil.repository';
 import { LotofacilResultsEntity } from './domain/lotofacil-results.entity';
 import { SaveResultsDto } from './dto/save-results.dto';
@@ -32,22 +32,38 @@ export class LotofacilService {
     );
   }
 
-  saveResults(dto: SaveResultsDto): Observable<LotofacilResultsEntity> {
+  saveResults(dto: SaveResultsDto): Observable<LotofacilResultsEntity[]> {
     this.logger.log('Saving lotofacil results');
-    const result = dto.results[0];
-    const entity = LotofacilResultsEntity.create({
-      concurso: result.concurso,
-      data: result.data,
-      dezenas: result.dezenas,
-      premiacoes: result.premiacoes,
-      acumulou: result.acumulou,
-      acumuladaProxConcurso: result.acumuladaProxConcurso,
-      dataProxConcurso: result.dataProxConcurso,
-      proxConcurso: result.proxConcurso,
-      timeCoracao: result.timeCoracao,
-      mesSorte: result.mesSorte,
-    });
-    return this.repository.save(entity).pipe(
+    return from(dto.results).pipe(
+      mergeMap((result) => {
+        const entity = LotofacilResultsEntity.create({
+          concurso: result.concurso,
+          data: result.data,
+          dezenas: result.dezenas,
+          premiacoes: result.premiacoes,
+          acumulou: result.acumulou,
+          acumuladaProxConcurso: result.acumuladaProxConcurso,
+          dataProxConcurso: result.dataProxConcurso,
+          proxConcurso: result.proxConcurso,
+          timeCoracao: result.timeCoracao,
+          mesSorte: result.mesSorte,
+        });
+        return this.repository.save(entity);
+      }),
+      toArray(),
+      catchError((error) => this.handleError(error)),
+    );
+  }
+
+  getLatestResult(): Observable<LotofacilResultsEntity> {
+    this.logger.log('Getting latest lotofacil result');
+    return this.repository.getLatest().pipe(
+      map((result) => {
+        if (!result) {
+          throw HttpErrors.notFound('Nenhum resultado encontrado');
+        }
+        return result;
+      }),
       catchError((error) => this.handleError(error)),
     );
   }

@@ -79,7 +79,7 @@ export class AuthService {
   register(registerDto: RegisterDto): Observable<AuthResponseDto> {
     return this.userRepository.findByEmail(registerDto.email).pipe(
       mergeMap((user) => {
-        if (user) {
+        if (user[0]) {
           return throwError(() => HttpErrors.conflict('Email', 'Email já está em uso'));
         }
         return this.userService.create(registerDto as CreateUserDto);

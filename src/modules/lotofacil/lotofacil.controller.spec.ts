@@ -3,7 +3,7 @@ import { HttpStatus, HttpException } from '@nestjs/common';
 import { of, throwError } from 'rxjs';
 import { LotofacilController } from './lotofacil.controller';
 import { LotofacilService } from './lotofacil.service';
-import { SaveResultsDto, LotofacilResultDto } from './dto/save-results.dto';
+import { SaveResultsDto } from './dto/save-results.dto';
 import { HttpErrors } from '../../shared/errors/http-errors.filter';
 import { DynamoDBErrors } from '../../shared/errors/database-erros.filter';
 import { mockResultDto, mockSavedEntity } from './mocks/lotofacil.mocks';
@@ -14,6 +14,7 @@ describe('LotofacilController', () => {
 
   const mockLotofacilService = {
     saveResults: jest.fn(),
+    getLatestResult: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -189,6 +190,70 @@ describe('LotofacilController', () => {
       );
 
       controller.saveResults(mockResultDto).subscribe({
+        error: (error) => {
+          expect(error.response).toEqual({
+            status: HttpStatus.INTERNAL_SERVER_ERROR,
+            error: 'Erro interno do servidor',
+            code: 'INTERNAL_SERVER_ERROR',
+            details: {
+              message: errorMessage,
+              errorId: timestamp,
+              timestamp,
+              action: 'Entre em contato com o suporte técnico informando o errorId',
+            },
+          });
+          done();
+        },
+      });
+    });
+  });
+
+  describe('getLatestResult', () => {
+    it('should successfully return the latest result', (done) => {
+      mockLotofacilService.getLatestResult.mockReturnValue(of(mockSavedEntity));
+
+      controller.getLatestResult().subscribe({
+        next: (result) => {
+          expect(result).toBe(mockSavedEntity);
+          expect(service.getLatestResult).toHaveBeenCalled();
+          done();
+        },
+        error: done,
+      });
+    });
+
+    it('should handle not found error', (done) => {
+      mockLotofacilService.getLatestResult.mockReturnValue(
+        throwError(() => HttpErrors.notFound('Nenhum resultado encontrado'))
+      );
+
+      controller.getLatestResult().subscribe({
+        error: (error) => {
+          expect(error.response).toEqual({
+            status: HttpStatus.NOT_FOUND,
+            error: 'O recurso Nenhum resultado encontrado não foi encontrado',
+            code: 'NOT_FOUND',
+            details: {
+              resource: 'Nenhum resultado encontrado',
+              reason: 'O recurso solicitado não existe ou foi removido',
+            },
+          });
+          done();
+        },
+      });
+    });
+
+    it('should handle internal server error', (done) => {
+      const errorMessage = 'Erro ao buscar o resultado mais recente';
+      const timestamp = new Date().toISOString();
+      
+      jest.spyOn(Date.prototype, 'toISOString').mockReturnValue(timestamp);
+
+      mockLotofacilService.getLatestResult.mockReturnValue(
+        throwError(() => HttpErrors.internalServerError(errorMessage))
+      );
+
+      controller.getLatestResult().subscribe({
         error: (error) => {
           expect(error.response).toEqual({
             status: HttpStatus.INTERNAL_SERVER_ERROR,
