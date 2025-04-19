@@ -1,6 +1,6 @@
 # FezinhAI API
 
-API para o projeto FezinhAI, uma aplicação de receitas inteligente.
+API para o projeto FezinhAI, uma aplicação de loterias inteligente.
 
 ## Tecnologias
 
@@ -38,6 +38,15 @@ src/
 │   │   ├── health.service.ts
 │   │   └── dto/
 │   │       └── health-metrics.dto.ts
+│   ├── lotofacil/               # Módulo de Lotofacil
+│   │   ├── domain/
+│   │   │   └── lotofacil-results.entity.ts
+│   │   ├── dto/
+│   │   │   └── save-results.dto.ts
+│   │   ├── lotofacil.controller.ts
+│   │   ├── lotofacil.repository.ts
+│   │   ├── lotofacil.service.ts
+│   │   └── lotofacil.module.ts
 │   └── users/                  # Módulo de usuários
 │       ├── domain/
 │       │   └── user.entity.ts
