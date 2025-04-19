@@ -2,7 +2,7 @@ import { Observable } from 'rxjs';
 
 export interface IMessageQueueService {
   sendMessage<T>(queueName: string, message: T, delaySeconds?: number): Observable<string>;
-  s
+  
   sendMessageBatch<T>(
     queueName: string, 
     messages: Array<{
@@ -11,4 +11,6 @@ export interface IMessageQueueService {
       delaySeconds?: number;
     }>
   ): Observable<{ successful: string[] }>;
+  
+  registerQueue(name: string, url: string): void;
 } 

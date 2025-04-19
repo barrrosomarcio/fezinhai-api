@@ -7,6 +7,7 @@ API para o projeto FezinhAI, uma aplicação de loterias inteligente.
 - NestJS
 - TypeScript
 - AWS DynamoDB
+- AWS SQS
 - Redis (Cache)
 - JWT Authentication
 - RxJS
@@ -21,6 +22,9 @@ src/
 │   ├── aws-dynamo-db/          # Módulo específico para AWS DynamoDB
 │   │   ├── aws-dynamo-db.module.ts
 │   │   └── aws-dynamo-db.service.ts
+│   ├── aws-sqs/                # Módulo específico para AWS SQS
+│   │   ├── aws-sqs.module.ts
+│   │   └── aws-sqs.service.ts
 │   ├── cache/                  # Módulo genérico de cache
 │   │   ├── cache.module.ts
 │   │   ├── cache.service.ts
@@ -31,6 +35,11 @@ src/
 │   │   ├── database.service.ts
 │   │   └── interfaces/
 │   │       └── database.service.interface.ts
+│   ├── message-queue/          # Módulo genérico de filas
+│   │   ├── message-queue.module.ts
+│   │   ├── message-queue.service.ts
+│   │   └── interfaces/
+│   │       └── message-queue.service.interface.ts
 │   └── redis/                  # Módulo específico para Redis
 │       ├── redis.module.ts
 │       └── redis.service.ts
@@ -93,6 +102,7 @@ AWS_REGION=your-region
 AWS_ACCESS_KEY_ID=your-access-key
 AWS_SECRET_ACCESS_KEY=your-secret-key
 DYNAMODB_TABLE_NAME=your-table-name
+SQS_QUEUE_URL=https://sqs.your-region.amazonaws.com/your-account-id/your-queue-name
 
 # Redis Configuration
 REDIS_HOST=localhost
@@ -119,6 +129,16 @@ Para o módulo Lotofacil, é necessário configurar uma tabela com a seguinte es
   - **Nome**: concurso-index
   - **Chave de Partição**: concurso (Number)
   - **Projeção**: All
+
+## Configuração do SQS
+
+É necessário criar uma fila no AWS SQS:
+
+1. Acesse o [AWS Console](https://console.aws.amazon.com/sqs/home)
+2. Clique em "Criar fila"
+3. Escolha o tipo de fila (Standard ou FIFO)
+4. Configure as permissões necessárias
+5. Adicione a URL da fila no arquivo `.env`
 
 ## Configuração do Redis
 
@@ -195,6 +215,7 @@ A documentação da API está disponível em `/api` quando o servidor estiver ro
 - Autenticação JWT
 - Tratamento de erros centralizado
 - Sistema de cache com Redis
+- Sistema de mensageria com AWS SQS
 - Health check da aplicação
 - Integração com AWS DynamoDB
 - Programação reativa com RxJS
