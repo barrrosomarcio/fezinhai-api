@@ -3,6 +3,7 @@ import { HttpStatus } from '@nestjs/common';
 import { of, throwError } from 'rxjs';
 import { LotofacilController } from './lotofacil.controller';
 import { LotofacilService } from './lotofacil.service';
+import { JwtService } from '@nestjs/jwt';
 import { SaveResultsDto } from './dto/save-results.dto';
 import { HttpErrors } from '../../shared/errors/http-errors.filter';
 import { DynamoDBErrors } from '../../shared/errors/database-erros.filter';
@@ -15,6 +16,12 @@ describe('LotofacilController', () => {
   const mockLotofacilService = {
     saveResults: jest.fn(),
     getLatestResult: jest.fn(),
+    saveStats: jest.fn(),
+  };
+
+  const mockJwtService = {
+    sign: jest.fn().mockReturnValue('mockToken'),
+    verify: jest.fn().mockReturnValue({ userId: 'mockUserId' }),
   };
 
   beforeEach(async () => {
@@ -24,6 +31,10 @@ describe('LotofacilController', () => {
         {
           provide: LotofacilService,
           useValue: mockLotofacilService,
+        },
+        {
+          provide: JwtService,
+          useValue: mockJwtService,
         },
       ],
     }).compile();
@@ -259,6 +270,62 @@ describe('LotofacilController', () => {
       );
 
       controller.getLatestResult().subscribe({
+        error: (error) => {
+          expect(error.response).toEqual({
+            status: HttpStatus.INTERNAL_SERVER_ERROR,
+            error: 'Erro interno do servidor',
+            code: 'INTERNAL_SERVER_ERROR',
+            details: {
+              message: errorMessage,
+              errorId: timestamp,
+              timestamp,
+              action:
+                'Entre em contato com o suporte técnico informando o errorId',
+            },
+          });
+          done();
+        },
+      });
+    });
+  });
+
+  describe('saveStats', () => {
+    it('should successfully save stats and return a confirmation', (done) => {
+      const mockStatsRequest = {
+        /* mock data for SaveStatsRequest */
+      };
+      const mockResponse = { message: 'Stats saved successfully' };
+
+      mockLotofacilService.saveStats = jest
+        .fn()
+        .mockReturnValue(of(mockResponse));
+
+      controller.saveStats(mockStatsRequest).subscribe({
+        next: (result) => {
+          expect(result).toEqual(mockResponse);
+          expect(service.saveStats).toHaveBeenCalledWith(mockStatsRequest);
+          done();
+        },
+        error: done,
+      });
+    });
+
+    it('should handle errors when saving stats', (done) => {
+      const mockStatsRequest = {
+        /* mock data for SaveStatsRequest */
+      };
+      const errorMessage = 'Failed to save stats';
+      const timestamp = new Date().toISOString();
+
+      jest.spyOn(Date.prototype, 'toISOString').mockReturnValue(timestamp);
+
+      mockLotofacilService.saveStats = jest
+        .fn()
+        .mockReturnValue(
+          throwError(() => HttpErrors.internalServerError(errorMessage)),
+        );
+
+      controller.saveStats(mockStatsRequest).subscribe({
         error: (error) => {
           expect(error.response).toEqual({
             status: HttpStatus.INTERNAL_SERVER_ERROR,

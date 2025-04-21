@@ -53,10 +53,16 @@ jobs:
             StrictHostKeyChecking no
           END
 
-      - name: Deploy to EC2
+      - name: Copy files to EC2
         run: |
-          scp -r dist package.json package-lock.json .env ec2:/home/ec2-user/fezinhai-api/
+          scp -r Dockerfile docker-compose.yaml .env.example package.json package-lock.json .dockerignore ec2:/home/ec2-user/fezinhai-api/
+          ssh ec2 "mkdir -p /home/ec2-user/fezinhai-api/dist"
+          scp -r dist/* ec2:/home/ec2-user/fezinhai-api/dist/
+          scp -r src ec2:/home/ec2-user/fezinhai-api/
 
+      - name: Deploy with Docker
+        run: |
           ssh ec2 "cd /home/ec2-user/fezinhai-api && \
-            npm ci --production && \
-            pm2 restart fezinhai-api || pm2 start dist/main.js --name fezinhai-api"
+            if [ ! -f .env ]; then cp .env.example .env; fi && \
+            docker-compose down && \
+            docker-compose up -d"
