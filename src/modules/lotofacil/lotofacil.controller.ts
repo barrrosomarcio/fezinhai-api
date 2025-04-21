@@ -5,6 +5,7 @@ import {
   Body,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Observable } from 'rxjs';
@@ -12,7 +13,9 @@ import { LotofacilService } from './lotofacil.service';
 import { SaveResultsDto } from './dto/save-results.dto';
 import { LotofacilResultsEntity } from './domain/lotofacil-results.entity';
 import { SaveStatsRequest } from './dto/save-stats-request';
+import { JwtAuthGuard } from '../../shared/guards/jwt-auth.guard';
 @ApiTags('Lotofacil')
+@UseGuards(JwtAuthGuard)
 @Controller('lotofacil')
 export class LotofacilController {
   constructor(private readonly service: LotofacilService) {}

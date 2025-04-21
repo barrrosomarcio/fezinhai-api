@@ -11,7 +11,7 @@ import {
 } from '../../shared/errors/database-erros.filter';
 import { SaveStatsRequest } from './dto/save-stats-request';
 import { CacheService } from '../../infra/cache/cache.service';
-import { CacheKey } from 'src/infra/cache/domain/cache-key';
+import { CacheKey } from '../../infra/cache/domain/cache-key';
 @Injectable()
 export class LotofacilService {
   private logger = new Logger(LotofacilService.name);
