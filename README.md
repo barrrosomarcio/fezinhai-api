@@ -61,7 +61,8 @@ src/
 │   │   ├── domain/
 │   │   │   └── lotofacil-results.entity.ts
 │   │   ├── dto/
-│   │   │   └── save-results.dto.ts
+│   │   │   ├── save-results.dto.ts
+│   │   │   └── save-stats-request.ts
 │   │   ├── lotofacil.controller.ts
 │   │   ├── lotofacil.repository.ts
 │   │   ├── lotofacil.service.ts
@@ -77,9 +78,11 @@ src/
 │       ├── user.service.ts
 │       └── users.module.ts
 └── shared/
-    └── errors/                 # Tratamento de erros
-        ├── http-errors.filter.ts
-        └── database-erros.filter.ts
+    ├── errors/                 # Tratamento de erros
+    │   ├── http-errors.filter.ts
+    │   └── database-erros.filter.ts
+    └── guards/                 # Guards de autenticação
+        └── jwt-auth.guard.ts
 ```
 
 ## Configuração do Ambiente
@@ -140,6 +143,8 @@ Para o módulo Lotofacil, é necessário configurar uma tabela com a seguinte es
 4. Configure as permissões necessárias
 5. Adicione a URL da fila no arquivo `.env`
 
+O módulo de fila de mensagens implementa uma interface `IMessageQueueService` que permite o envio de mensagens individuais ou em lote para a fila SQS, com suporte para parâmetros opcionais como delay e configurações FIFO.
+
 ## Configuração do Redis
 
 O Redis é configurado automaticamente via Docker Compose. Para configuração manual, certifique-se de ter uma instância Redis disponível:
@@ -154,6 +159,8 @@ brew install redis
 ```
 
 2. Ou usar um serviço gerenciado como Redis Cloud, Amazon ElastiCache, etc.
+
+O sistema de cache utiliza o Redis para armazenar dados temporários, como estatísticas e análises da Lotofacil. A implementação segue um padrão de interface com métodos para definir, obter, verificar e excluir chaves do cache.
 
 ## Executando o Projeto
 
@@ -188,6 +195,8 @@ O deployment é automatizado via GitHub Actions para EC2:
 
 2. Execute o workflow "Deploy to EC2" manualmente na aba Actions do GitHub.
 
+O processo de deployment utiliza Docker e Docker Compose para criar contêineres da aplicação e do Redis, garantindo um ambiente consistente e isolado.
+
 ## Documentação da API
 
 A documentação da API está disponível em `/api` quando o servidor estiver rodando.
@@ -207,22 +216,26 @@ A documentação da API está disponível em `/api` quando o servidor estiver ro
 
 ### Lotofacil
 - `POST /lotofacil/save-results` - Salvar concursos da Lotofacil
-- `GET /lotofacil/latest` - Obter o concurso mais recente da Lotofacil
+- `GET /lotofacil/last` - Obter o concurso mais recente da Lotofacil
+- `POST /lotofacil/analisys` - Salvar estatísticas da Lotofacil
+- `GET /lotofacil/analisys` - Obter análises da Lotofacil
+
+**Nota**: Todos os endpoints do Lotofacil requerem autenticação JWT.
 
 ## Características
 
 - Arquitetura limpa e modular
-- Autenticação JWT
+- Autenticação JWT para todos os endpoints (exceto health e auth)
 - Tratamento de erros centralizado
-- Sistema de cache com Redis
-- Sistema de mensageria com AWS SQS
+- Sistema de cache com Redis para armazenar estatísticas e análises
+- Sistema de mensageria com AWS SQS para processamento assíncrono
 - Health check da aplicação
-- Integração com AWS DynamoDB
-- Programação reativa com RxJS
-- Documentação Swagger
+- Integração com AWS DynamoDB para persistência de dados
+- Programação reativa com RxJS e Observables
+- Documentação Swagger com suporte a autenticação por token
 - Validação de DTOs
 - Tipagem forte com TypeScript
-- Containerização com Docker
+- Containerização com Docker e Docker Compose
 - Deploy automatizado via GitHub Actions
 
 ## Padrões de Código
@@ -231,9 +244,10 @@ A documentação da API está disponível em `/api` quando o servidor estiver ro
 - Clean Architecture
 - Repository Pattern
 - Dependency Injection
-- Reactive Programming
-- Error Handling
+- Reactive Programming com RxJS
+- Error Handling centralizado
 - Type Safety
+- Interface-first design
 
 ## Contribuição
 
