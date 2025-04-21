@@ -8,4 +8,4 @@ import { MessageQueueService } from './message-queue.service';
   providers: [MessageQueueService],
   exports: [MessageQueueService],
 })
-export class MessageQueueModule {} 
+export class MessageQueueModule {}

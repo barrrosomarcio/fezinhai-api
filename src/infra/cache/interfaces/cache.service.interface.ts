@@ -8,4 +8,4 @@ export interface ICacheService {
   delete(key: string): Observable<boolean>;
 
   exists(key: string): Observable<boolean>;
-} 
+}

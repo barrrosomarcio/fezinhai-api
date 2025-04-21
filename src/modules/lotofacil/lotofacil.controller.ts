@@ -60,7 +60,7 @@ export class LotofacilController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Stats retrieved successfully',
-  }) 
+  })
   saveStats(@Body() requestBody: SaveStatsRequest) {
     return this.service.saveStats(requestBody);
   }

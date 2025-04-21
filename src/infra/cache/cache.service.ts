@@ -10,7 +10,7 @@ export class CacheService implements ICacheService {
 
   set<T>(key: string, value: T, ttl?: number): Observable<void> {
     const serializedValue = JSON.stringify(value);
-    
+
     return this.redisService.set(key, serializedValue, ttl).pipe(
       map(() => {}),
       catchError((error) => {
@@ -26,7 +26,7 @@ export class CacheService implements ICacheService {
         if (!result) {
           return null;
         }
-        
+
         try {
           return JSON.parse(result) as T;
         } catch (e) {

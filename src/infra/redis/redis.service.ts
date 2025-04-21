@@ -75,7 +75,7 @@ export class RedisService implements OnModuleInit {
       }),
     );
   }
-  
+
   expire(key: string, seconds: number): Observable<boolean> {
     return from(this.client.expire(key, seconds)).pipe(
       map((result) => result === 1),
@@ -84,4 +84,4 @@ export class RedisService implements OnModuleInit {
       }),
     );
   }
-} 
+}

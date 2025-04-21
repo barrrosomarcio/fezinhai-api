@@ -4,7 +4,10 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { AwsSqsService } from '../aws-sqs/aws-sqs.service';
 import { IMessageQueueService } from './interfaces/message-queue.service.interface';
-import { SendMessageCommandOutput, SendMessageBatchCommandOutput } from '@aws-sdk/client-sqs';
+import {
+  SendMessageCommandOutput,
+  SendMessageBatchCommandOutput,
+} from '@aws-sdk/client-sqs';
 
 @Injectable()
 export class MessageQueueService implements IMessageQueueService {
@@ -26,11 +29,11 @@ export class MessageQueueService implements IMessageQueueService {
 
   private getQueueUrl(queueName: string): string {
     const queueUrl = this.queues[queueName];
-    
+
     if (!queueUrl) {
       throw new Error(`Queue not found: ${queueName}`);
     }
-    
+
     return queueUrl;
   }
 
@@ -40,14 +43,12 @@ export class MessageQueueService implements IMessageQueueService {
     delaySeconds?: number,
   ): Observable<string> {
     const queueUrl = this.getQueueUrl(queueName);
-    
-    return this.sqsService
-      .sendMessage(queueUrl, message, delaySeconds)
-      .pipe(
-        map((result: SendMessageCommandOutput) => {
-          return result.MessageId || '';
-        })
-      );
+
+    return this.sqsService.sendMessage(queueUrl, message, delaySeconds).pipe(
+      map((result: SendMessageCommandOutput) => {
+        return result.MessageId || '';
+      }),
+    );
   }
 
   sendMessageBatch<T>(
@@ -55,17 +56,15 @@ export class MessageQueueService implements IMessageQueueService {
     messages: Array<{ id: string; message: T; delaySeconds?: number }>,
   ): Observable<{ successful: string[] }> {
     const queueUrl = this.getQueueUrl(queueName);
-    
-    return this.sqsService
-      .sendMessageBatch(queueUrl, messages)
-      .pipe(
-        map((result: SendMessageBatchCommandOutput) => {
-          return {
-            successful: (result.Successful || [])
-              .map((s) => s.MessageId || '')
-              .filter(Boolean) as string[],
-          };
-        }),
-      );
+
+    return this.sqsService.sendMessageBatch(queueUrl, messages).pipe(
+      map((result: SendMessageBatchCommandOutput) => {
+        return {
+          successful: (result.Successful || [])
+            .map((s) => s.MessageId || '')
+            .filter(Boolean),
+        };
+      }),
+    );
   }
-} 
+}

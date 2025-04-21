@@ -1,5 +1,13 @@
 import { Injectable, HttpException, Logger } from '@nestjs/common';
-import { Observable, throwError, from, mergeMap, toArray, of, last } from 'rxjs';
+import {
+  Observable,
+  throwError,
+  from,
+  mergeMap,
+  toArray,
+  of,
+  last,
+} from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { LotofacilRepository } from './lotofacil.repository';
 import { LotofacilResultsEntity } from './domain/lotofacil-results.entity';
@@ -16,7 +24,10 @@ import { CacheKey } from '../../infra/cache/domain/cache-key';
 export class LotofacilService {
   private logger = new Logger(LotofacilService.name);
 
-  constructor(private readonly repository: LotofacilRepository, private readonly cacheService: CacheService) {}
+  constructor(
+    private readonly repository: LotofacilRepository,
+    private readonly cacheService: CacheService,
+  ) {}
 
   private handleError(error: DynamoDBError): Observable<never> {
     this.logger.error('Error occurred:', {
@@ -74,16 +85,21 @@ export class LotofacilService {
   }
 
   saveStats(requestBody: SaveStatsRequest) {
-    return of(Object.values(CacheKey).map((key) => {
-      const value = requestBody[key];
-      this.logger.log(`Saving value for ${key}:`, value);
-      return this.cacheService.set(key, value);
-    }));
+    return of(
+      Object.values(CacheKey).map((key) => {
+        const value = requestBody[key];
+        this.logger.log(`Saving value for ${key}:`, value);
+        return this.cacheService.set(key, value);
+      }),
+    );
   }
 
-  mapStats(key: CacheKey, values: Partial<SaveStatsRequest>): Observable<SaveStatsRequest> {
+  mapStats(
+    key: CacheKey,
+    values: Partial<SaveStatsRequest>,
+  ): Observable<SaveStatsRequest> {
     return from(this.cacheService.get(key)).pipe(
-      mergeMap((value) => this.cacheService.set(key, values[key])),
+      mergeMap(() => this.cacheService.set(key, values[key])),
       map((value) => ({ ...values, [key]: value })),
     );
   }
@@ -95,13 +111,14 @@ export class LotofacilService {
         from(this.cacheService.get(key)).pipe(
           map((value) => {
             this.logger.log(`Retrieved value for ${key}:`, value);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             values[key] = value as any;
             return values;
-          })
-        )
+          }),
+        ),
       ),
       last(),
-      catchError((error) => this.handleError(error))
+      catchError((error) => this.handleError(error)),
     );
   }
 }

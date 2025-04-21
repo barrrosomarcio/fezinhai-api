@@ -291,10 +291,14 @@ describe('LotofacilController', () => {
 
   describe('saveStats', () => {
     it('should successfully save stats and return a confirmation', (done) => {
-      const mockStatsRequest = { /* mock data for SaveStatsRequest */ };
+      const mockStatsRequest = {
+        /* mock data for SaveStatsRequest */
+      };
       const mockResponse = { message: 'Stats saved successfully' };
 
-      mockLotofacilService.saveStats = jest.fn().mockReturnValue(of(mockResponse));
+      mockLotofacilService.saveStats = jest
+        .fn()
+        .mockReturnValue(of(mockResponse));
 
       controller.saveStats(mockStatsRequest).subscribe({
         next: (result) => {
@@ -307,15 +311,19 @@ describe('LotofacilController', () => {
     });
 
     it('should handle errors when saving stats', (done) => {
-      const mockStatsRequest = { /* mock data for SaveStatsRequest */ };
+      const mockStatsRequest = {
+        /* mock data for SaveStatsRequest */
+      };
       const errorMessage = 'Failed to save stats';
       const timestamp = new Date().toISOString();
 
       jest.spyOn(Date.prototype, 'toISOString').mockReturnValue(timestamp);
 
-      mockLotofacilService.saveStats = jest.fn().mockReturnValue(
-        throwError(() => HttpErrors.internalServerError(errorMessage))
-      );
+      mockLotofacilService.saveStats = jest
+        .fn()
+        .mockReturnValue(
+          throwError(() => HttpErrors.internalServerError(errorMessage)),
+        );
 
       controller.saveStats(mockStatsRequest).subscribe({
         error: (error) => {
@@ -327,7 +335,8 @@ describe('LotofacilController', () => {
               message: errorMessage,
               errorId: timestamp,
               timestamp,
-              action: 'Entre em contato com o suporte técnico informando o errorId',
+              action:
+                'Entre em contato com o suporte técnico informando o errorId',
             },
           });
           done();

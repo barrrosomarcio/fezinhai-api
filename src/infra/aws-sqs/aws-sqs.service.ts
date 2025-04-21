@@ -69,9 +69,7 @@ export class AwsSqsService implements OnModuleInit {
 
     return from(this.client.send(command)).pipe(
       catchError((error) => {
-        throw HttpErrors.internalServerError(
-          `AWS SQS error: ${error.message}`,
-        );
+        throw HttpErrors.internalServerError(`AWS SQS error: ${error.message}`);
       }),
     );
   }
@@ -125,4 +123,4 @@ export class AwsSqsService implements OnModuleInit {
       }),
     );
   }
-} 
+}

@@ -8,14 +8,18 @@ import { ConfigService } from '@nestjs/config';
 import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 @Module({
-  imports: [DatabaseModule, CacheModule, JwtModule.registerAsync({
-    imports: [ConfigModule],
-    useFactory: (configService: ConfigService) => ({
-      secret: configService.get<string>('JWT_SECRET'),
-      signOptions: { expiresIn: '1d' },
+  imports: [
+    DatabaseModule,
+    CacheModule,
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET'),
+        signOptions: { expiresIn: '1d' },
+      }),
+      inject: [ConfigService],
     }),
-    inject: [ConfigService],
-  }),],
+  ],
   controllers: [LotofacilController],
   providers: [LotofacilService, LotofacilRepository],
   exports: [LotofacilService],
